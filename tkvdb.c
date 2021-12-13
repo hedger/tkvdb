@@ -27,7 +27,7 @@
 
 #include "tkvdb.h"
 
-#define TKVDB_SIGNATURE    "tkvdb003"
+#define TKVDB_SIGNATURE    "tkvdb228"
 
 /* at the begin of each on-disk block there is a byte with type.
  * footer marked as removed is used in vacuum procedure */
@@ -128,7 +128,18 @@ struct tkvdb_tr_footer
 
 #define TKVDB_TR_FTRSIZE (sizeof(struct tkvdb_tr_footer))
 
+
 /* on-disk node */
+#ifndef TKV_LARGE_DISKNODE
+struct tkvdb_disknode
+{
+	uint16_t size;        /* node size */
+	uint8_t type;         /* type (has value or metadata) */
+	uint8_t nsubnodes;   /* number of subnodes */
+	uint8_t prefix_size;  /* prefix size */
+	uint8_t data[1];      /* variable size data */
+} PACKED;
+#else // TKV_LARGE_DISKNODE
 struct tkvdb_disknode
 {
 	uint32_t size;        /* node size */
@@ -138,6 +149,7 @@ struct tkvdb_disknode
 
 	uint8_t data[1];      /* variable size data */
 } PACKED;
+#endif
 
 #ifdef _WIN32
 #pragma pack(pop, packing)

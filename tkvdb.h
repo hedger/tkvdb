@@ -68,11 +68,19 @@ typedef enum TKVDB_PARAM
 	TKVDB_PARAM_DBFILE_OPEN_FLAGS
 } TKVDB_PARAM;
 
+#ifndef TKV_LARGE_DISKNODE
+typedef struct tkvdb_datum
+{
+	void *data;
+	uint16_t size;
+} tkvdb_datum;
+#else // TKV_LARGE_DISKNODE
 typedef struct tkvdb_datum
 {
 	void *data;
 	size_t size;
 } tkvdb_datum;
+#endif
 
 typedef struct tkvdb_tr tkvdb_tr;
 
