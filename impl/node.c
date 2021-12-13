@@ -178,7 +178,7 @@ do {                                                                       \
 
 		memset(node->next, 0, sizeof(TKVDB_MEMNODE_TYPE *) * 256);
 #ifndef TKVDB_PARAMS_NODBFILE
-		memset(node->fnext, 0, sizeof(uint32_t) * 256);
+		memset(node->fnext, 0, sizeof(tkvdb_offs_t) * 256);
 #endif
 		if (meta && (meta_size > 0)) {
 			COPY_META(node);
@@ -204,13 +204,13 @@ TKVDB_IMPL_CLONE_SUBNODES(TKVDB_MEMNODE_TYPE *dst, TKVDB_MEMNODE_TYPE *src)
 	if (src->c.type & TKVDB_NODE_LEAF) {
 		memset(dst->next, 0, sizeof(void *) * 256);
 #ifndef TKVDB_PARAMS_NODBFILE
-		memset(dst->fnext, 0, sizeof(uint32_t) * 256);
+		memset(dst->fnext, 0, sizeof(tkvdb_offs_t) * 256);
 #endif
 	} else {
 		memcpy(dst->next,  src->next,
 			sizeof(TKVDB_MEMNODE_TYPE *) * 256);
 #ifndef TKVDB_PARAMS_NODBFILE
-		memcpy(dst->fnext, src->fnext, sizeof(uint32_t) * 256);
+		memcpy(dst->fnext, src->fnext, sizeof(tkvdb_offs_t) * 256);
 #endif
 	}
 	dst->c.nsubnodes = src->c.nsubnodes;
@@ -220,7 +220,7 @@ TKVDB_IMPL_CLONE_SUBNODES(TKVDB_MEMNODE_TYPE *dst, TKVDB_MEMNODE_TYPE *src)
 #ifndef TKVDB_PARAMS_NODBFILE
 static TKVDB_RES
 TKVDB_IMPL_NODE_READ(tkvdb_tr *trns,
-	uint32_t off, TKVDB_MEMNODE_TYPE **node_ptr)
+	tkvdb_offs_t off, TKVDB_MEMNODE_TYPE **node_ptr)
 {
 	uint8_t buf[TKVDB_READ_SIZE];
 	struct tkvdb_disknode *disknode;
@@ -267,10 +267,10 @@ TKVDB_IMPL_NODE_READ(tkvdb_tr *trns,
 	}
 
 	if (disknode->nsubnodes > TKVDB_SUBNODES_THR) {
-		prefix_val_meta_size -= 256 * sizeof(uint32_t);
+		prefix_val_meta_size -= 256 * sizeof(tkvdb_offs_t);
 	} else {
 		prefix_val_meta_size -= disknode->nsubnodes * sizeof(uint8_t);
-		prefix_val_meta_size -= disknode->nsubnodes * sizeof(uint32_t);
+		prefix_val_meta_size -= disknode->nsubnodes * sizeof(tkvdb_offs_t);
 	}
 
 	/* allocate memnode */
@@ -322,22 +322,22 @@ TKVDB_IMPL_NODE_READ(tkvdb_tr *trns,
 
 		if (disknode->nsubnodes > TKVDB_SUBNODES_THR) {
 			memcpy((*node_ptr)->fnext, ptr,
-				256 * sizeof(uint32_t));
-			ptr += 256 * sizeof(uint32_t);
+				256 * sizeof(tkvdb_offs_t));
+			ptr += 256 * sizeof(tkvdb_offs_t);
 		} else {
 			int i;
-			uint32_t *offptr;
+			tkvdb_offs_t *offptr;
 
-			offptr = (uint32_t *)(ptr
+			offptr = (tkvdb_offs_t *)(ptr
 				+ disknode->nsubnodes * sizeof(uint8_t));
-			memset((*node_ptr)->fnext, 0, sizeof(uint32_t) * 256);
+			memset((*node_ptr)->fnext, 0, sizeof(tkvdb_offs_t) * 256);
 
 			for (i=0; i<disknode->nsubnodes; i++) {
 				(*node_ptr)->fnext[*ptr] = *offptr;
 				ptr++;
 				offptr++;
 			}
-			ptr += disknode->nsubnodes * sizeof(uint32_t);
+			ptr += disknode->nsubnodes * sizeof(tkvdb_offs_t);
 		}
 		prefix_val_meta = (*node_ptr)->prefix_val_meta;
 	}

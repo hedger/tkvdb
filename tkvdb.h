@@ -9,6 +9,12 @@ typedef struct tkvdb tkvdb;
 typedef struct tkvdb_params tkvdb_params;
 typedef struct tkvdb_triggers tkvdb_triggers;
 
+#ifndef TKV_64BIT_PTR
+typedef uint32_t tkvdb_offs_t;
+#else
+typedef uint64_t tkvdb_offs_t;
+#endif
+
 typedef enum TKVDB_RES
 {
 	TKVDB_OK = 0,
@@ -192,8 +198,8 @@ tkvdb_cursor *tkvdb_cursor_create(tkvdb_tr *tr);
 TKVDB_RES tkvdb_vacuum(tkvdb_tr *tr, tkvdb_tr *vac, tkvdb_tr *tres,
 	tkvdb_cursor *c);
 /* get database file information */
-TKVDB_RES tkvdb_dbinfo(tkvdb *db, uint32_t *root_off,
-	uint32_t *gap_begin, uint32_t *gap_end);
+TKVDB_RES tkvdb_dbinfo(tkvdb *db, tkvdb_offs_t *root_off,
+	tkvdb_offs_t *gap_begin, tkvdb_offs_t *gap_end);
 
 
 /* triggers */

@@ -99,7 +99,7 @@ next_byte:
 #ifndef TKVDB_PARAMS_NODBFILE
 		else if (tr->db && (node->fnext[*sym] != 0)) {
 			TKVDB_MEMNODE_TYPE *tmp;
-			uint32_t off;
+			tkvdb_offs_t off;
 
 			/* load subnode from disk */
 			off = node->fnext[*sym];
