@@ -266,19 +266,41 @@ tkvdb_file_seek(tkv_fh fd, tkvdb_offs_t transaction_off)
 	return 1;
 }
 
+
+static int 
+tkvdb_file_stat(tkv_fh fd, size_t* size)
+{
+#ifdef TKV_IO_FURI
+	uint32_t file_size;
+	file_size = storage_file_size(fd);
+    if (file_size <= 0) {
+        return 0;
+    }
+
+    *size = file_size;
+	return 1;
+#else // TKV_IO_FURI
+	struct stat st;
+	if (fstat(fd, &st) != 0) {
+		return 0;
+	}
+    *size = st.st_size;
+	return 1;
+#endif // TKV_IO_FURI
+}
+
+
 static TKVDB_RES
 tkvdb_info_read(const tkv_fh fd, struct tkvdb_db_info *info)
 {
-	struct stat st;
 	off_t footer_pos; /* position of footer in database file */
 	ssize_t io_res;
 
 	/* get file size */
-	if (fstat(fd, &st) != 0) {
+    
+	if (!tkvdb_file_stat(fd, &info->filesize)) {
 		return TKVDB_IO_ERROR;
 	}
-
-	info->filesize = st.st_size;
 
 	if (info->filesize == 0) {
 		/* empty file */
@@ -296,7 +318,11 @@ tkvdb_info_read(const tkv_fh fd, struct tkvdb_db_info *info)
 		return TKVDB_IO_ERROR;
 	}
 
+#ifdef TKV_IO_FURI
+	io_res = storage_file_read(fd, &info->footer, TKVDB_TR_FTRSIZE);
+#else
 	io_res = read(fd, &info->footer, TKVDB_TR_FTRSIZE);
+#endif
 	if (io_res < (ssize_t)TKVDB_TR_FTRSIZE) {
 		/* read less than footer, assuming it's error */
 		return TKVDB_IO_ERROR;
@@ -324,7 +350,11 @@ tkvdb_try_read_file(tkv_fh fd, void *buf, size_t size, int ignore_eof)
 	uint8_t *bbuf = buf;
 	for (;;) {
 		ssize_t read_res;
+#ifdef TKV_IO_FURI
+		read_res = storage_file_read(fd, bbuf, size - bytes_read);
+#else
 		read_res = read(fd, bbuf, size - bytes_read);
+#endif
 		if (read_res < 0) {
 			return 0;
 		} else if (read_res == 0) {
@@ -352,7 +382,11 @@ tkvdb_try_write_file(tkv_fh fd, void *buf, size_t size)
 	uint8_t *bbuf = buf;
 	for (;;) {
 		ssize_t write_res;
+#ifdef TKV_IO_FURI
+		write_res = storage_file_write(fd, bbuf, size - bytes_write);
+#else
 		write_res = write(fd, bbuf, size - bytes_write);
+#endif
 		if (write_res < 0) {
 			return 0;
 		}
@@ -365,38 +399,22 @@ tkvdb_try_write_file(tkv_fh fd, void *buf, size_t size)
 	return 1;
 }
 
-static int64_t
-tkvdb_file_stat(tkv_fh fd, void *buf, size_t size)
-{
-#ifdef TKV_IO_FURI
-	uint32_t file_size;
-	file_size = storage_file_size(fd);
-	return file_size;
-#else // TKV_IO_FURI
-	struct stat st;
-	if (fstat(fd, &st) != 0) {
-		return TKVDB_IO_ERROR;
-	}
-	return st.st_size;
-#endif // TKV_IO_FURI
-}
-
-
-static tkv_fh
-tkvdb_file_fd_open(const char* path, tkvdb_params *params)
+static int
+tkvdb_file_fd_open(const char* path, tkvdb_params *params, tkv_fh* out_fd)
 {
 #ifdef TKV_IO_FURI
 	Storage* storage = furi_record_open("storage");
-	tkv_fh fd = storage_file_alloc(storage); // open(path, db->params.flags, db->params.mode);
+	*out_fd = storage_file_alloc(storage); // open(path, db->params.flags, db->params.mode);
 	furi_record_close("storage");
 
-	if (!storage_file_open(fd, path, FSAM_READ, FSOM_OPEN_EXISTING)) {
-		storage_file_close(fd);
+	if (!storage_file_open(*out_fd, path, FSAM_READ, FSOM_OPEN_EXISTING)) {
+		storage_file_close(*out_fd);
 		return 0;
 	}
-	return fd;
+	return 1;
 #else // TKV_IO_FURI
-	return open(path, params->flags, params->mode);
+	*out_fd = open(path, params->flags, params->mode);
+    return (*out_fd > 0);
 #endif // TKV_IO_FURI
 }
 
@@ -459,8 +477,7 @@ tkvdb_open(const char *path, tkvdb_params *user_params)
 		tkvdb_params_init(&db->params);
 	}
 
-	db->fd = tkvdb_file_fd_open(path, &db->params);
-	if (db->fd <= 0) {
+	if (!tkvdb_file_fd_open(path, &db->params, &db->fd)) {
 		goto fail_free;
 	}
 

@@ -180,9 +180,11 @@ typedef struct tkvdb_trigger_info
 typedef TKVDB_RES (*tkvdb_trigger_func)(tkvdb_trigger_info *info);
 
 #ifdef TKV_IO_FURI
-	typedef struct File* tkv_fh;
+#include <furi.h>
+#include <storage/storage.h>
+typedef struct File* tkv_fh;
 #else
-	typedef int tkv_fh;
+typedef int tkv_fh;
 #endif
 
 #ifdef __cplusplus
