@@ -226,7 +226,7 @@ TKVDB_IMPL_NODE_READ(tkvdb_tr *trns,
 	struct tkvdb_disknode *disknode;
 	size_t prefix_val_meta_size;
 	uint8_t *ptr;
-	int fd;
+	tkv_fh fd;
 	unsigned char *prefix_val_meta;
 	tkvdb_tr_data *tr = trns->data;
 
@@ -246,7 +246,7 @@ TKVDB_IMPL_NODE_READ(tkvdb_tr *trns,
 
 	fd = tr->db->fd;
 
-	if (lseek(fd, off, SEEK_SET) != (off_t)off) {
+	if (!tkvdb_file_seek(fd, off)) {
 		return TKVDB_IO_ERROR;
 	}
 

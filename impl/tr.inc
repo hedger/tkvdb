@@ -350,8 +350,7 @@ TKVDB_IMPL_DO_COMMIT(tkvdb_tr *trns, struct tkvdb_db_info *vacdbinfo)
 	tr->db->info.footer.transaction_size = node_off - transaction_off;
 
 	/* seek */
-	if (lseek(tr->db->fd, transaction_off, SEEK_SET)
-		!= (off_t)transaction_off) {
+	if (!tkvdb_file_seek(tr->db->fd, transaction_off)) {
 		return TKVDB_IO_ERROR;
 	}
 
@@ -396,12 +395,12 @@ TKVDB_IMPL_DO_COMMIT(tkvdb_tr *trns, struct tkvdb_db_info *vacdbinfo)
 
 			return TKVDB_IO_ERROR;
 		}
-		/* seek to end of file */
-		if (lseek(tr->db->fd, tr->db->info.filesize, SEEK_SET)
-			!= (off_t)tr->db->info.filesize) {
 
+		/* seek to end of file */
+		if (!tkvdb_file_seek(tr->db->fd, tr->db->info.filesize)) {
 			return TKVDB_IO_ERROR;
 		}
+
 		/* write footer */
 		wsize = sizeof(struct tkvdb_tr_footer);
 		if (!tkvdb_try_write_file(tr->db->fd, &tr->db->info.footer,
