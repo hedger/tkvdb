@@ -66,7 +66,7 @@ TKVDB_IMPL_SUBNODE(tkvdb_tr *trns, void *node, int n, void **ret,
 	}
 #ifndef TKVDB_PARAMS_NODBFILE
 	else if (tr->db && (tmpnode->fnext[n] != 0)) {
-		uint64_t off;
+		uint32_t off;
 
 		/* load subnode from disk */
 		off = tmpnode->fnext[n];

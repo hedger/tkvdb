@@ -42,7 +42,7 @@
 /* max number of subnodes we store as [symbols array] => [offsets array]
  * if number of subnodes is more than TKVDB_SUBNODES_THR, they stored on disk
  * as array of 256 offsets */
-#define TKVDB_SUBNODES_THR (256 - 256 / sizeof(uint64_t))
+#define TKVDB_SUBNODES_THR (256 - 256 / sizeof(uint32_t))
 
 /* read block size */
 #define TKVDB_READ_SIZE 4096
@@ -109,7 +109,7 @@ struct tkvdb_params
 struct tkvdb_tr_header
 {
 	uint8_t type;
-	uint64_t footer_off;       /* pointer to footer */
+	uint32_t footer_off;       /* pointer to footer */
 } PACKED;
 
 /* on-disk transaction footer */
@@ -117,12 +117,12 @@ struct tkvdb_tr_footer
 {
 	uint8_t type;
 	uint8_t signature[8];
-	uint64_t root_off;         /* offset of root node */
-	uint64_t transaction_size; /* transaction size */
-	uint64_t transaction_id;   /* transaction number */
+	uint32_t root_off;         /* offset of root node */
+	uint32_t transaction_size; /* transaction size */
+	uint32_t transaction_id;   /* transaction number */
 
-	uint64_t gap_begin;
-	uint64_t gap_end;
+	uint32_t gap_begin;
+	uint32_t gap_end;
 } PACKED;
 
 #define TKVDB_TR_FTRSIZE (sizeof(struct tkvdb_tr_footer))
@@ -149,7 +149,7 @@ struct tkvdb_db_info
 {
 	struct tkvdb_tr_footer footer;
 
-	uint64_t filesize;
+	uint32_t filesize;
 };
 
 /* database */
@@ -280,7 +280,7 @@ tkvdb_info_read(const int fd, struct tkvdb_db_info *info)
 		return TKVDB_CORRUPTED;
 	}
 
-	if (info->footer.transaction_size > (uint64_t)footer_pos) {
+	if (info->footer.transaction_size > (uint32_t)footer_pos) {
 		return TKVDB_CORRUPTED;
 	}
 
@@ -459,7 +459,7 @@ tkvdb_params_free(tkvdb_params *params)
 }
 
 void
-tkvdb_param_set(tkvdb_params *params, TKVDB_PARAM p, int64_t val)
+tkvdb_param_set(tkvdb_params *params, TKVDB_PARAM p, int32_t val)
 {
 	switch (p) {
 		case TKVDB_PARAM_TR_DYNALLOC:
@@ -657,8 +657,8 @@ tkvdb_writebuf_realloc(tkvdb *db, size_t new_size)
 #include "tkvdb_generated.inc"
 
 TKVDB_RES
-tkvdb_dbinfo(tkvdb *db, uint64_t *root_off,
-	uint64_t *gap_begin, uint64_t *gap_end)
+tkvdb_dbinfo(tkvdb *db, uint32_t *root_off,
+	uint32_t *gap_begin, uint32_t *gap_end)
 {
 	struct tkvdb_db_info info;
 

@@ -172,7 +172,7 @@ extern "C" {
 /* allocate and fill db params with default values */
 tkvdb_params *tkvdb_params_create(void);
 /* change parameter */
-void tkvdb_param_set(tkvdb_params *params, TKVDB_PARAM p, int64_t val);
+void tkvdb_param_set(tkvdb_params *params, TKVDB_PARAM p, int32_t val);
 /* free */
 void tkvdb_params_free(tkvdb_params *params);
 
@@ -192,8 +192,8 @@ tkvdb_cursor *tkvdb_cursor_create(tkvdb_tr *tr);
 TKVDB_RES tkvdb_vacuum(tkvdb_tr *tr, tkvdb_tr *vac, tkvdb_tr *tres,
 	tkvdb_cursor *c);
 /* get database file information */
-TKVDB_RES tkvdb_dbinfo(tkvdb *db, uint64_t *root_off,
-	uint64_t *gap_begin, uint64_t *gap_end);
+TKVDB_RES tkvdb_dbinfo(tkvdb *db, uint32_t *root_off,
+	uint32_t *gap_begin, uint32_t *gap_end);
 
 
 /* triggers */

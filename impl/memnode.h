@@ -33,8 +33,8 @@ typedef struct TKVDB_MEMNODE_TYPE_COMMON
 	size_t meta_pad;                  /* and metadata */
 #endif
 
-	uint64_t disk_size;               /* size of node on disk */
-	uint64_t disk_off;                /* offset of node on disk */
+	uint32_t disk_size;               /* size of node on disk */
+	uint32_t disk_off;                /* offset of node on disk */
 	unsigned int nsubnodes;           /* number of subnodes */
 } TKVDB_MEMNODE_TYPE_COMMON;
 
@@ -46,7 +46,7 @@ typedef struct TKVDB_MEMNODE_TYPE
 	void *next[256];
 #ifndef TKVDB_PARAMS_NODBFILE
 	/* positions of subnodes in file */
-	uint64_t fnext[256];
+	uint32_t fnext[256];
 #endif
 
 	unsigned char prefix_val_meta[1]; /* prefix, value and metadata */
