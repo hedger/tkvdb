@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include "tkvdb.h"
 
@@ -779,6 +780,7 @@ tkvdb_tr_create(tkvdb *db, tkvdb_params *user_params)
 	tr->mem = &tkvdb_tr_mem;
 
 	if (trdata->params.alignval > 1) {
+#ifdef TKV_SUPPORT_UNALIGNED
 		if (db) {
 			tr->commit = &tkvdb_commit_alignval;
 			tr->rollback = &tkvdb_rollback_alignval;
@@ -807,6 +809,9 @@ tkvdb_tr_create(tkvdb *db, tkvdb_params *user_params)
 			tr->delx = &tkvdb_del_alignval_nodbx;
 			tr->subnode = &tkvdb_subnode_alignval_nodb;
 		}
+#else // TKV_SUPPORT_UNALIGNED
+				assert(0); //compact build support only unaligned files
+#endif
 	} else {
 		if (db) {
 			tr->commit = &tkvdb_commit_generic;
@@ -925,6 +930,7 @@ tkvdb_cursor_create(tkvdb_tr *tr)
 	c->free = &tkvdb_cursor_free;
 
 	if (trdata->params.alignval > 1) {
+#ifdef TKV_SUPPORT_UNALIGNED
 		if (trdata->db) {
 			c->seek = &tkvdb_seek_alignval;
 			c->first = &tkvdb_first_alignval;
@@ -941,6 +947,9 @@ tkvdb_cursor_create(tkvdb_tr *tr)
 			c->next = &tkvdb_next_alignval_nodb;
 			c->prev = &tkvdb_prev_alignval_nodb;
 		}
+#else
+		assert(0); // only unaligned mode in compact build
+#endif
 	} else {
 		if (trdata->db) {
 			c->seek = &tkvdb_seek_generic;

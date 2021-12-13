@@ -3,6 +3,10 @@
  * at  Thu Jun 25 22:40:58 2020
  * PLEASE DON'T EDIT THIS FILE DIRECTLY
  */
+
+
+#ifdef TKV_SUPPORT_ALIGNED
+
 #define TKVDB_MEMNODE_TYPE tkvdb_memnode_alignval
 #define TKVDB_MEMNODE_TYPE_COMMON tkvdb_memnode_alignval_common
 #define TKVDB_MEMNODE_TYPE_LEAF tkvdb_memnode_alignval_leaf
@@ -99,6 +103,7 @@
 #undef TKVDB_MEMNODE_TYPE_COMMON
 #undef TKVDB_MEMNODE_TYPE_LEAF
 
+#endif // TKV_SUPPORT_ALIGNED
 
 #define TKVDB_MEMNODE_TYPE tkvdb_memnode_generic
 #define TKVDB_MEMNODE_TYPE_COMMON tkvdb_memnode_generic_common
@@ -133,6 +138,8 @@
 #define TKVDB_IMPL_DO_DEL tkvdb_do_del_generic
 #define TKVDB_IMPL_DEL tkvdb_del_generic
 #define TKVDB_IMPL_SUBNODE tkvdb_subnode_generic
+
+
 #include "impl/memnode.h"
 #include "impl/node.c"
 #include "impl/put.c"
@@ -190,6 +197,7 @@
 #undef TKVDB_MEMNODE_TYPE_COMMON
 #undef TKVDB_MEMNODE_TYPE_LEAF
 
+#ifdef TKV_SUPPORT_ALIGNED
 
 #define TKVDB_MEMNODE_TYPE tkvdb_memnode_alignval_nodb
 #define TKVDB_MEMNODE_TYPE_COMMON tkvdb_memnode_alignval_nodb_common
@@ -292,6 +300,9 @@
 #undef TKVDB_MEMNODE_TYPE
 #undef TKVDB_MEMNODE_TYPE_COMMON
 #undef TKVDB_MEMNODE_TYPE_LEAF
+
+
+#endif // TKV_SUPPORT_ALIGNED
 
 
 #define TKVDB_MEMNODE_TYPE tkvdb_memnode_generic_nodb
