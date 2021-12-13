@@ -20,22 +20,34 @@
 /* node in memory */
 typedef struct TKVDB_MEMNODE_TYPE_COMMON
 {
-	int type;
-
+#ifndef TKV_LARGE_DISKNODE
+	int8_t type;
 	struct TKVDB_MEMNODE_TYPE *replaced_by;
-
+	uint8_t prefix_size;
+	uint16_t val_size;
+	uint16_t meta_size;
+#else // TKV_LARGE_DISKNODE
+	int type;
+	struct TKVDB_MEMNODE_TYPE *replaced_by;
 	size_t prefix_size;
 	size_t val_size;
 	size_t meta_size;
+#endif // TKV_LARGE_DISKNODE
 
 #ifdef TKVDB_PARAMS_ALIGN_VAL
 	size_t val_pad;                   /* padding for aligned value */
 	size_t meta_pad;                  /* and metadata */
 #endif
 
+#ifndef TKV_LARGE_DISKNODE
+	uint16_t disk_size;               /* size of node on disk */
+	tkvdb_offs_t disk_off;                /* offset of node on disk */
+	uint8_t nsubnodes;           /* number of subnodes */
+#else // TKV_LARGE_DISKNODE
 	tkvdb_offs_t disk_size;               /* size of node on disk */
 	tkvdb_offs_t disk_off;                /* offset of node on disk */
 	unsigned int nsubnodes;           /* number of subnodes */
+#endif // TKV_LARGE_DISKNODE
 } TKVDB_MEMNODE_TYPE_COMMON;
 
 typedef struct TKVDB_MEMNODE_TYPE
