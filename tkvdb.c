@@ -268,7 +268,7 @@ tkvdb_file_seek(tkv_fh fd, tkvdb_offs_t transaction_off)
 
 
 static int 
-tkvdb_file_stat(tkv_fh fd, size_t* size)
+tkvdb_file_stat(tkv_fh fd, tkvdb_offs_t* size)
 {
 #ifdef TKV_IO_FURI
 	uint32_t file_size;
