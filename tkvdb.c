@@ -267,8 +267,8 @@ tkvdb_file_seek(tkv_fh fd, tkvdb_offs_t transaction_off)
 }
 
 
-static int 
-tkvdb_file_stat(tkv_fh fd, size_t* size)
+static int
+tkvdb_file_stat(tkv_fh fd, tkvdb_offs_t* size)
 {
 #ifdef TKV_IO_FURI
 	uint32_t file_size;
@@ -297,7 +297,7 @@ tkvdb_info_read(const tkv_fh fd, struct tkvdb_db_info *info)
 	ssize_t io_res;
 
 	/* get file size */
-    
+
 	if (!tkvdb_file_stat(fd, &info->filesize)) {
 		return TKVDB_IO_ERROR;
 	}
