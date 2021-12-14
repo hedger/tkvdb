@@ -65,7 +65,12 @@ typedef enum TKVDB_PARAM
 	TKVDB_PARAM_CURSOR_KEY_LIMIT,
 
 	/* flags passed to open() function */
-	TKVDB_PARAM_DBFILE_OPEN_FLAGS
+	TKVDB_PARAM_DBFILE_OPEN_FLAGS,
+
+	/* mode passed to open() function */
+	TKVDB_PARAM_DBFILE_OPEN_MODE,
+
+	TKVDB_PARAM_WRITE_BUF_LIMIT
 } TKVDB_PARAM;
 
 #ifndef TKV_LARGE_DISKNODE
@@ -83,6 +88,7 @@ typedef struct tkvdb_datum
 #endif
 
 typedef struct tkvdb_tr tkvdb_tr;
+typedef struct tkvdb_tr_data tkvdb_tr_data;
 
 struct tkvdb_tr
 {
@@ -101,7 +107,7 @@ struct tkvdb_tr
 
 	void (*free)(tkvdb_tr *tr);
 
-	void *data;
+	tkvdb_tr_data *data;
 
 	/* triggers and metadata */
 	TKVDB_RES (*putx)(tkvdb_tr *tr,

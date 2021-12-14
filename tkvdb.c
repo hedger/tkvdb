@@ -273,18 +273,14 @@ tkvdb_file_stat(tkv_fh fd, tkvdb_offs_t* size)
 #ifdef TKV_IO_FURI
 	uint32_t file_size;
 	file_size = storage_file_size(fd);
-    if (file_size <= 0) {
-        return 0;
-    }
-
-    *size = file_size;
+	*size = file_size;
 	return 1;
 #else // TKV_IO_FURI
 	struct stat st;
 	if (fstat(fd, &st) != 0) {
 		return 0;
 	}
-    *size = st.st_size;
+	*size = st.st_size;
 	return 1;
 #endif // TKV_IO_FURI
 }
@@ -407,7 +403,7 @@ tkvdb_file_fd_open(const char* path, tkvdb_params *params, tkv_fh* out_fd)
 	*out_fd = storage_file_alloc(storage); // open(path, db->params.flags, db->params.mode);
 	furi_record_close("storage");
 
-	if (!storage_file_open(*out_fd, path, FSAM_READ, FSOM_OPEN_EXISTING)) {
+	if (!storage_file_open(*out_fd, path, params->flags, params->mode)) {
 		storage_file_close(*out_fd);
 		return 0;
 	}
@@ -447,13 +443,17 @@ tkvdb_params_init(tkvdb_params *params)
 	params->key_dynalloc = 1;
 	params->key_limit = SIZE_MAX;
 
+#ifdef TKV_IO_FURI
+	params->mode = FSAM_READ; //FSAM_READ | FSAM_WRITE;
+	params->flags = FSOM_OPEN_EXISTING; //FSOM_OPEN_ALWAYS;
+#else
 	params->mode = S_IRUSR | S_IWUSR;
 #ifndef _WIN32
 	params->flags = O_RDWR | O_CREAT;
 #else
 	params->flags = O_RDWR | O_CREAT | O_BINARY;
 #endif
-
+#endif
 	params->alignval = 0;
 
 	params->autobegin = 0;
@@ -586,6 +586,13 @@ tkvdb_param_set(tkvdb_params *params, TKVDB_PARAM p, int32_t val)
 
 		case TKVDB_PARAM_DBFILE_OPEN_FLAGS:
 			params->flags = val;
+			break;
+		case TKVDB_PARAM_DBFILE_OPEN_MODE:
+			params->mode = val;
+			break;
+
+		case TKVDB_PARAM_WRITE_BUF_LIMIT:
+			params->write_buf_limit = (size_t)val;
 			break;
 		default:
 			break;
