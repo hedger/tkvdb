@@ -404,7 +404,6 @@ tkvdb_file_fd_open(const char* path, tkvdb_params *params, tkv_fh* out_fd)
 	furi_record_close("storage");
 
 	if (!storage_file_open(*out_fd, path, params->flags, params->mode)) {
-		storage_file_close(*out_fd);
 		return 0;
 	}
 	return 1;
@@ -418,8 +417,7 @@ static int
 tkvdb_file_fd_close(tkv_fh fd)
 {
 #ifdef TKV_IO_FURI
-	storage_file_close(fd);
-	storage_file_free(fd);
+    storage_file_free(fd);
 	return 1;
 #else // TKV_IO_FURI
 	return close(fd) < 0 ? 0 : 1;
@@ -478,7 +476,7 @@ tkvdb_open(const char *path, tkvdb_params *user_params)
 	}
 
 	if (!tkvdb_file_fd_open(path, &db->params, &db->fd)) {
-		goto fail_free;
+		goto fail_close; //fail_free; // FIXME - hack
 	}
 
 	r = tkvdb_info_read(db->fd, &(db->info));
@@ -1140,4 +1138,3 @@ tkvdb_triggers_free(tkvdb_triggers *triggers)
 
 	free(triggers);
 }
-
